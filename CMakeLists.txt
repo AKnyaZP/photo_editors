@@ -23,7 +23,6 @@ find_package(glfw3 REQUIRED)
 find_package(glad REQUIRED)
 find_package(gl3w CONFIG REQUIRED)
 find_package(OpenCV REQUIRED)
-find_package(soil CONFIG REQUIRED)
 
 include_directories( ${OpenCV_INCLUDE_DIRS} )
 
