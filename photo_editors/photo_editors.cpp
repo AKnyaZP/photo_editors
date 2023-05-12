@@ -1,4 +1,4 @@
-﻿#include "photo_editors.h"
+#include "photo_editors.h"
 
 void contr_func(cv::Mat rgb_image, float contr) {
     std::vector<cv::Mat> rgb_contr;
@@ -56,11 +56,11 @@ void create_texture(std::string file_name, std::map<std::string, float>& par_map
     cv::Mat result_image_rgb;
     cv::cvtColor(hsv_image, result_image_rgb, cv::COLOR_HSV2RGB);
 
-    cv::Mat blurred;
-    GaussianBlur(result_image_rgb, blurred, cv::Size(image.cols, image.rows), (double)par_map["blur"]);
+   /* cv::Mat blurred;
+    GaussianBlur(result_image_rgb, blurred, cv::Size(image.cols, image.rows), (double)par_map["blur"]);*/
 
     cv::Mat result_image_rgba;
-    cv::cvtColor(blurred, result_image_rgba, cv::COLOR_RGB2RGBA);
+    cv::cvtColor(result_image_rgb, result_image_rgba, cv::COLOR_RGB2RGBA);
 
     GLuint texture_id;
     glGenTextures(1, &texture_id);
@@ -115,7 +115,7 @@ int main()
     windowflag |= ImGuiWindowFlags_MenuBar;
  
 
-    io.Fonts->AddFontFromFileTTF("C://photo_editors/IBMPlexSans-ExtraLight.ttf", 30.0f);
+    //io.Fonts->AddFontFromFileTTF("C://photo_editors/IBMPlexSans-ExtraLight.ttf", 30.0f);
 
     const char* filters = "Image files (*.png){.png} (*.jpg){.jpg}";
     static bool par = false;
@@ -319,10 +319,4 @@ int main()
 
 
 
-//glBegin(GL_QUADS);
-//glTexCoord2f(0.0, 0.0); glVertex3f(-1.0, -1.0, 0.0);
-//glTexCoord2f(1.0, 0.0); glVertex3f(1.0, -1.0, 0.0);
-//glTexCoord2f(1.0, 1.0); glVertex3f(1.0, 1.0, 0.0);
-//glTexCoord2f(0.0, 1.0); glVertex3f(-1.0, 1.0, 0.0);
-//glEnd();
 
