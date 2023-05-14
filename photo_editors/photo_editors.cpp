@@ -19,10 +19,13 @@ void contr_func(cv::Mat rgb_image, float contr) {
 void create_texture(std::string file_name, std::map<std::string, float>& par_map) {
 
     cv::Mat image = cv::imread(file_name.c_str());
+
+   cv::Mat sharp;
+   addWeighted(image, 1.5, image, par_map["brightness"] - 0.5, par_map["sharpness"], sharp);
     
     // Convert image to RGBA format
     cv::Mat rgb_image;
-    cv::cvtColor(image, rgb_image, cv::COLOR_BGR2RGB);
+    cv::cvtColor(sharp, rgb_image, cv::COLOR_BGR2RGB);
 
     contr_func(rgb_image, par_map["contrast"]);
 
@@ -36,11 +39,6 @@ void create_texture(std::string file_name, std::map<std::string, float>& par_map
     }
     cv::merge(rgb_ct, rgb_image);
 
-    /*cv::Mat sharp;
-    addWeighted(rgb_image, 1.5, blurred, -0.5, par_map["sharpness"], sharp);*/
-    //colorful_temperature_func(rgb_image, par_map["colorful_temperature"]);
-
-    // Get image size
     cv::Mat hsv_image;
     cv::cvtColor(rgb_image, hsv_image, cv::COLOR_RGB2HSV);
 
@@ -52,12 +50,8 @@ void create_texture(std::string file_name, std::map<std::string, float>& par_map
 
     cv::merge(hsv_channels, hsv_image);
 
-
     cv::Mat result_image_rgb;
     cv::cvtColor(hsv_image, result_image_rgb, cv::COLOR_HSV2RGB);
-
-   /* cv::Mat blurred;
-    GaussianBlur(result_image_rgb, blurred, cv::Size(image.cols, image.rows), (double)par_map["blur"]);*/
 
     cv::Mat result_image_rgba;
     cv::cvtColor(result_image_rgb, result_image_rgba, cv::COLOR_RGB2RGBA);
@@ -76,7 +70,6 @@ void create_texture(std::string file_name, std::map<std::string, float>& par_map
 
     ImTextureID texture = (void*)(intptr_t)texture_id;
     ImGui::Image(texture, ImVec2(result_image_rgba.cols, result_image_rgba.rows));
-
 
 }
 
@@ -129,6 +122,7 @@ int main()
     static float sharpness = 1.0f;
     static float vignette = 1.0f;
     static float blur = 0.0f;
+    static float brightness = 0.0f;
     
     
 
@@ -233,13 +227,6 @@ int main()
         
         std::string file_name = filePathName;
 
-     /*   cv::Mat image = cv::imread(file_name);
-        cv::Mat hsv_image;
-        cv::cvtColor(image, hsv_image, cv::COLOR_BGR2HSV);*/
-
-        
-        
-
 
         ImGui::SetCursorPos(ImVec2( 10, ((ImGui::GetWindowHeight()) / 3) - 50));
         ImGui::Checkbox("Hide parametres", &(par));
@@ -269,30 +256,27 @@ int main()
 
             ImGui::SliderFloat("Blurred", &blur, 0.0f, 2.0f);
 
+            ImGui::SliderFloat("Brightness", &brightness, -2.0f, 2.0f);
+
             ImGui::EndGroup();
             ImGui::PopItemWidth();
         }
 
         ImGui::SetCursorPos(ImVec2(((ImGui::GetWindowWidth()) / 3), ((ImGui::GetWindowHeight()) / 3) - 50));
         
-        std::map<std::string, float> par_map{ {"saturation", saturation}, {"hue", hue}, {"exposition", exposition}, {"shade", shade}, {"colorful temperature", colorful_temperature}, {"contrast", contrast}, {"sharpness", sharpness}, {"vignette", vignette}, {"blurred", blur}};
+        std::map<std::string, float> par_map{ {"saturation", saturation}, {"hue", hue}, {"exposition", exposition}, {"shade", shade}, {"colorful temperature", colorful_temperature}, {"contrast", contrast}, {"sharpness", sharpness}, {"vignette", vignette}, {"blurred", blur}, {"brightness", brightness}};
       
         //float zoom_level = 1.0f; // Значение масштаба
         //ImGui::SetNextWindowContentSize(ImVec2(width * zoom_level, height * zoom_level));
-        if (file_name != "") {
-            
-            
+        if (file_name != "") {  
 
-           /* cv::imshow("im", result_image);
-            cv::waitKey(0);*/
-            
             ImGui::Begin("Image", NULL, ImGuiWindowFlags_AlwaysHorizontalScrollbar | ImGuiWindowFlags_AlwaysAutoResize);
             create_texture(file_name, par_map);
             ImGui::End();
+
         }
         
       
-
         ImGui::End();
 
         ImGui::Render();
@@ -303,7 +287,6 @@ int main()
         glClearColor(0.f, 0.f, 0.2, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
 
         glfwSwapBuffers(window);
     }
