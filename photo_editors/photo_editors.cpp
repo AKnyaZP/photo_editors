@@ -3,13 +3,15 @@
 cv::Mat contr_func(cv::Mat brightness_image, float contr) {
     cv::Mat rgb_image;
     cv::cvtColor(brightness_image, rgb_image, cv::COLOR_BGR2RGB);
-    std::vector<cv::Mat> rgb_contr;
-    cv::split(rgb_image, rgb_contr);
-    rgb_contr[0] *= contr;
-    rgb_contr[1] *= contr;
-    cv::merge(rgb_contr, rgb_image);
-    return rgb_image;
+
+    cv::Mat contrast_image = cv::Mat::zeros(rgb_image.size(), rgb_image.type());
+
+    rgb_image.convertTo(contrast_image, -1, contr, 0);
+
+    return contrast_image;
+
 }
+
 
 cv::Mat brightness_func(cv::Mat image, float br) {
     cv::Mat brightness_image;
@@ -23,8 +25,10 @@ cv::Mat colorful_temperature_func(cv::Mat rgb_image, float ct) {
     if (ct >= 1.0f) {
         rgb_ct[0] *= ct;
     }
-    else if (ct <= 1.0f) {
-        rgb_ct[2] *= (1.0f - ct) * 10.0f;
+    else if (ct < 1.0f) {
+        ct = 1.0f + (1.0f - ct);
+        rgb_ct[2] *= ct;
+        rgb_ct[1] *= ct;
     }
     cv::merge(rgb_ct, rgb_image);
 
@@ -46,9 +50,8 @@ cv::Mat HSV_func(cv::Mat rgb_image, float hue, float sat, float exp) {
     return hsv_image;
 }
 
-cv::Mat sharp_func(cv::Mat image_blur, double sharp) {
+cv::Mat sharp_func(cv::Mat image_blur, float sharp) {
     cv::Mat image_sharp;
-
     float matr[9]{
                 -0.0375 - 0.05 * sharp, -0.0375 - 0.05 * sharp, -0.0375 - 0.05 * sharp,
                 -0.0375 - 0.05 * sharp, 1.3 + 0.4 * sharp, -0.0375 - 0.05 * sharp,
@@ -60,12 +63,14 @@ cv::Mat sharp_func(cv::Mat image_blur, double sharp) {
 
     return image_sharp;
 }
-void create_texture(std::string file_name, std::map<std::string, float>& par_map, int blur_par) {
 
-    double sharp = (double)par_map["sharpness"];
-    sharp *= 7.0;
 
-    cv::Mat image = cv::imread(file_name.c_str());
+cv::Mat create_image(cv::Mat image, std::map<std::string, float>& par_map, int blur_par) {
+
+    float sharp = par_map["sharpness"];
+    sharp *= 7.0f;
+
+    
 
     brightness_func(image, par_map["brightness"]);
 
@@ -83,11 +88,14 @@ void create_texture(std::string file_name, std::map<std::string, float>& par_map
     cv::blur(result_image_rgb, image_blur, cv::Size(blur_par, blur_par));
     
     sharp_func(image_blur, sharp);
-    
 
     cv::Mat result_image_rgba;
     cv::cvtColor(sharp_func(image_blur, sharp), result_image_rgba, cv::COLOR_RGB2RGBA);
 
+    return result_image_rgba;
+}
+
+void create_texture(cv::Mat result_image_rgba) {
 
     GLuint texture_id;
     glGenTextures(1, &texture_id);
@@ -102,6 +110,7 @@ void create_texture(std::string file_name, std::map<std::string, float>& par_map
     glBindTexture(GL_TEXTURE_2D, 0);
 
     ImTextureID texture = (void*)(intptr_t)texture_id;
+
     ImGui::Image(texture, ImVec2(result_image_rgba.cols, result_image_rgba.rows));
 
 }
@@ -132,7 +141,8 @@ int main()
 
     Editor();
     ImGui_ImplGlfw_InitForOpenGL(window, true);
-    ImGuiIO& io = ImGui::GetIO(); (void)io;
+    ImGuiIO& io = ImGui::GetIO();
+    (void)io;
 
 
     ImGuiWindowFlags windowflag = 0;
@@ -141,10 +151,11 @@ int main()
     windowflag |= ImGuiWindowFlags_MenuBar;
 
 
-    io.Fonts->AddFontFromFileTTF("C://photo_editors/IBMPlexSans-ExtraLight.ttf", 30.0f);
+    io.Fonts->AddFontFromFileTTF("C:/photo_editors/IBMPlexSans-ExtraLight.ttf", 30.0f);
 
     const char* filters = "Image files (*.png){.png} (*.jpg){.jpg}";
-    static bool par = false;
+    static bool sl_par = false;
+    static bool t_par = false;
     static std::string filePathName = "";
     static float saturation = 1.0f;
     static float hue = 1.0f;
@@ -200,6 +211,22 @@ int main()
 
                 if (ImGui::MenuItem("Close", "Ctrl+W")) { return 0; }
 
+                if (ImGui::MenuItem("Sliders parametres", "Ctrl+P")) {
+                    if (!sl_par && !t_par)
+                        sl_par = true;
+                    else
+                        sl_par = false;
+                }
+
+                if (ImGui::MenuItem("Text parametres", "Ctrl + T")) {
+                    if (sl_par == false && t_par == false) {
+                        t_par = true;
+                    }
+                    else {
+                        t_par = false;
+                    }
+                }
+
                 ImGui::EndMenu();
             }
             ImGui::EndMenuBar();
@@ -227,12 +254,25 @@ int main()
             }
         }
 
-        if ((ImGui::IsKeyDown(ImGuiKey_RightCtrl) || ImGui::IsKeyDown(ImGuiKey_LeftCtrl)) && ImGui::IsKeyDown(ImGuiKey_S)) {
-            return 1;
-        }
 
         if ((ImGui::IsKeyDown(ImGuiKey_RightCtrl) || ImGui::IsKeyDown(ImGuiKey_LeftCtrl)) && ImGui::IsKeyDown(ImGuiKey_W)) {
             return 0;
+        }
+
+        if ((ImGui::IsKeyDown(ImGuiKey_RightCtrl) || ImGui::IsKeyDown(ImGuiKey_LeftCtrl)) && ImGui::IsKeyDown(ImGuiKey_P)) {
+            if (!sl_par && !t_par)
+                sl_par = true;
+            else
+                sl_par = false;
+        }
+
+        if ((ImGui::IsKeyDown(ImGuiKey_RightCtrl) || ImGui::IsKeyDown(ImGuiKey_LeftCtrl)) && ImGui::IsKeyDown(ImGuiKey_T)) {
+            if (sl_par == false && t_par == false) {
+                t_par = true;
+            }
+            else {
+                t_par = false;
+            }
         }
 
 
@@ -261,15 +301,18 @@ int main()
         std::string file_name = filePathName;
 
 
-        ImGui::SetCursorPos(ImVec2(10, ((ImGui::GetWindowHeight()) / 3) - 50));
-        ImGui::Checkbox("Hide parametres", &(par));
+        /*ImGui::SetCursorPos(ImVec2(10, ((ImGui::GetWindowHeight()) / 3) - 50));
+        ImGui::Checkbox("Hide slider parametres", &(sl_par));
+        ImGui::Checkbox("Hide input parametres", &(in_par));*/
 
-        if (!(par)) {
+        if ((sl_par)) {
 
             ImGui::SetCursorPos(ImVec2(10, (ImGui::GetWindowHeight()) / 3));
 
             ImGui::PushItemWidth(500);
             ImGui::BeginGroup();
+
+            ImGui::Text("Sliders parametres");
 
             ImGui::SliderFloat("Saturation", &saturation, 0.0f, 2.0f);
 
@@ -296,20 +339,81 @@ int main()
             ImGui::PopItemWidth();
         }
 
-        ImGui::SetCursorPos(ImVec2(((ImGui::GetWindowWidth()) / 3), ((ImGui::GetWindowHeight()) / 3) - 50));
+        else if (!(sl_par) && (t_par)) {
+            ImGui::SetCursorPos(ImVec2(10, (ImGui::GetWindowHeight()) / 3));
 
-        std::map<std::string, float> par_map{ {"saturation", saturation}, {"hue", hue}, {"exposition", exposition}, {"shade", shade}, {"colorful temperature", colorful_temperature}, {"contrast", contrast}, {"sharpness", sharpness}, {"vignette", vignette}, {"brightness", brightness} };
+            ImGui::PushItemWidth(500);
+            ImGui::BeginGroup();
 
-        //float zoom_level = 1.0f; // Значение масштаба
-        //ImGui::SetNextWindowContentSize(ImVec2(width * zoom_level, height * zoom_level));
-        if (file_name != "") {
+            ImGui::Text("Text parametres");
 
-            ImGui::Begin("Image", NULL, ImGuiWindowFlags_AlwaysHorizontalScrollbar | ImGuiWindowFlags_AlwaysAutoResize);
-            create_texture(file_name, par_map, blur);
-            ImGui::End();
+            ImGui::InputFloat("Saturation", &saturation);
 
+            ImGui::InputFloat("Hue", &hue);
+            
+            ImGui::InputFloat("Exposition", &exposition);
+            
+            ImGui::InputFloat("Shade", &shade);
+            
+            ImGui::InputFloat("Colorful temperature", &colorful_temperature);
+            
+            ImGui::InputFloat("Contrast", &contrast);
+            
+            ImGui::InputFloat("Sharpness", &sharpness);
+            
+            ImGui::InputFloat("Vignette", &vignette);
+            
+            ImGui::InputFloat("Brightness", &brightness);
+            
+            ImGui::InputInt("Blurred", &blur);
+
+            ImGui::EndGroup();
+            ImGui::PopItemWidth();
         }
 
+        ImGui::SetCursorPos(ImVec2(((ImGui::GetWindowWidth()) / 3), ((ImGui::GetWindowHeight()) / 3) - 50));
+                                     
+        std::map<std::string, float> par_map{ {"saturation", saturation}, {"hue", hue}, {"exposition", exposition}, {"shade", shade}, {"colorful temperature", colorful_temperature}, {"contrast", contrast}, {"sharpness", sharpness}, {"vignette", vignette}, {"brightness", brightness} };
+
+        cv::Mat image = cv::imread(file_name.c_str());
+        if (file_name != "") {
+            if (blur <= 0) {
+                blur = 1;
+                ImGui::Begin("Image", NULL, ImGuiWindowFlags_AlwaysHorizontalScrollbar | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoCollapse);
+
+                create_texture(create_image(image, par_map, blur));
+
+                ImGui::End();
+            }
+         
+        }
+
+        if ((ImGui::IsKeyDown(ImGuiKey_RightCtrl) || ImGui::IsKeyDown(ImGuiKey_LeftCtrl)) && ImGui::IsKeyDown(ImGuiKey_S)) {
+            ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", "Save Image", ".jpg", ".", 1, nullptr, ImGuiFileDialogFlags_Modal);
+
+            // Check if dialog is open and user has selected a file
+            if (ImGuiFileDialog::Instance()->Display("ChooseFileDlgKey", ImGuiFileDialogFlags_ConfirmOverwrite))
+            {
+                if (ImGuiFileDialog::Instance()->IsOk()) {
+                    // Get selected file path
+                    std::string filePathName = ImGuiFileDialog::Instance()->GetFilePathName();
+
+                    // Get selected directory path
+                    std::string directoryPath = ImGuiFileDialog::Instance()->GetCurrentPath();
+
+                    // Get file name
+                    std::string fileName = ImGuiFileDialog::Instance()->GetCurrentFileName();
+
+                    // Combine directory path and file name to get full file path
+                    std::string fullPath = directoryPath + "/" + fileName;
+
+                    // Save image to selected file path
+                    cv::imwrite(fullPath, create_image(image, par_map, blur));
+                }
+                
+                
+            }
+        }
 
         ImGui::End();
 
@@ -334,5 +438,8 @@ int main()
     return 0;
 }
 
+
+
+// Create imgui file dialog
 
 
