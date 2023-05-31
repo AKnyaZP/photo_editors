@@ -11,7 +11,6 @@
 #include <GLFW/glfw3.h>
 #include <GL/gl3w.h>
 #define STB_IMAGE_IMPLEMENTATION
-#include <dialog/ImGuiFileDialog/stb/stb_image.h>
 #include <dialog/ImGuiFileDialog/ImGuiFileDialog.h>
 #include <opencv2/opencv.hpp>
 #include "opencv2/imgcodecs.hpp"
