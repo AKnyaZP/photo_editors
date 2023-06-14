@@ -38,8 +38,8 @@ int main()
     windowflag |= ImGuiWindowFlags_MenuBar;
     windowflag |= ImGuiWindowFlags_NoBringToFrontOnFocus;
 
-
-    io.Fonts->AddFontFromFileTTF("C:/photo_editors/IBMPlexSans-ExtraLight.ttf", 30.0f);
+    io.FontGlobalScale = 2.0f;
+    //io.Fonts->AddFontFromFileTTF(default, 30.0f);
 
     //Image imageClass(static float saturation = 1.0f, static float hue = 1.0f, static float exposition = 1.0f, float shade = 1.0f, float colorful_temperature = 1.0f, float contrast = 1.0f, float sharpness = 0.0f, float brightness = 1.0f, float blur = 1);
     Image image;
@@ -61,7 +61,8 @@ int main()
     bool flag_for_image = true;
     bool flag_for_safe_dialog = false;
     bool flag_for_tool = false;
-   
+    int int_random_num_for_name = std::rand() % 100 + 1;
+    std::string string_random_num_for_name = std::to_string(int_random_num_for_name);
 
     while (!glfwWindowShouldClose(window))
     {
@@ -92,7 +93,7 @@ int main()
 
                 if (ImGui::MenuItem("Save", "Ctrl+S")) { flag_for_safe_dialog = true; }
 
-                if (ImGui::MenuItem("Close", "Ctrl+W")) { return 0; }
+                if (ImGui::MenuItem("Close", "Ctrl+W")) { flag_for_tool = true; }
 
                
 
@@ -275,7 +276,8 @@ int main()
 
             ImGui::Begin("Image", NULL, ImGuiWindowFlags_NoCollapse);
 
-
+           /* cv::imshow("yo", image.RGBAtoBGR(image.create_image(file_name, saturation, hue, exposition, shade, colorful_temperature, contrast, sharpness, brightness, blur)));
+            cv::waitKey(0);*/
             image.show_image_imgui(image.create_texture(image.create_image(file_name, saturation, hue, exposition, shade, colorful_temperature, contrast, sharpness, brightness, blur)));
 
             ImGui::End();
@@ -291,7 +293,7 @@ int main()
 
         if (ImGui::BeginPopupModal("Notification", &flag_for_tool))
         {
-            ImGui::Text("This is a notification!");
+            ImGui::Text("Are you sure you want to leave");
             ImGui::Separator();
 
             if (ImGui::Button("Exit")) {
@@ -300,12 +302,14 @@ int main()
 
             if (ImGui::Button("Save")) {
                 flag_for_safe_dialog = true;
+                flag_for_tool = false;
             }
 
             ImGui::EndPopup();
         }
             
-  
+
+        //cv::cvtColor(image.create_image(file_name, saturation, hue, exposition, shade, colorful_temperature, contrast, sharpness, brightness, blur), image.create_image(file_name, saturation, hue, exposition, shade, colorful_temperature, contrast, sharpness, brightness, blur), cv::COLOR_RGBA2BGR);
 
         if (flag_for_safe_dialog) {
             ImGuiFileDialog::Instance()->OpenDialog("ChooseFolderDlg", "Choose Folder", nullptr, ".");
@@ -315,8 +319,11 @@ int main()
         if (ImGuiFileDialog::Instance()->Display("ChooseFolderDlg")) {
             if (ImGuiFileDialog::Instance()->IsOk()) {
                 std::string FPName = ImGuiFileDialog::Instance()->GetFilePathName();
-                cv::imwrite(FPName + "/image.jpg", image.create_image(file_name, saturation, hue, exposition, shade, colorful_temperature, contrast, sharpness, brightness, blur));
-                ;
+                /*std::string FName = ImGuiFileDialog::Instance()->GetCurrentFileName();
+
+                ImGui::InputText("FileName", FName);*/
+                
+                cv::imwrite(FPName + "/" + string_random_num_for_name + "img.jpg", image.RGBAtoBGR(image.create_image(file_name, saturation, hue, exposition, shade, colorful_temperature, contrast, sharpness, brightness, blur)));
             }
             ImGuiFileDialog::Instance()->Close();
             flag_for_safe_dialog = false;
@@ -346,5 +353,7 @@ int main()
 
     return 0;
 }
+
+
 
 
