@@ -136,8 +136,13 @@ public:
         glBindTexture(GL_TEXTURE_2D, 0);
 
         ImTextureID texture = (void*)(intptr_t)texture_id;
-        
+
         return texture;
+    }
+
+    cv::Mat RGBAtoBGR(cv::Mat result_image_rgba) {
+        cv::cvtColor(result_image_rgba, result_image_rgba, cv::COLOR_RGBA2BGR);
+        return result_image_rgba;
     }
 
     void show_image_imgui(ImTextureID texture) {
