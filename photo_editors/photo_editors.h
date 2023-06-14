@@ -1,7 +1,5 @@
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include "imgui.h"
-#define STB_IMAGE_IMPLEMENTATION
-#include <dialog/ImGuiFileDialog/stb/stb_image.h>
 #include "ImGuizmo.h"
 #include <iosfwd>
 #include "imgui_impl_glfw.h"
