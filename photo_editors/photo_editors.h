@@ -26,38 +26,13 @@ public:
 
 class Image {
 public:
-    //Image(float saturation_, float hue_, float exposition_, float shade_, float colorful_temperature_, float contrast_, float sharpness_, float brightness_, int blur_) {
-    //    saturation = saturation_;
-    //    hue = hue_;
-    //    exposition = exposition_;
-    //    shade = shade_;
-    //    colorful_temperature = colorful_temperature_;
-    //    contrast = contrast_;
-    //    sharpness = sharpness_;
-    //    brightness = brightness_;
-    //    blur = blur_;
-    //};
-    Image() = default;
+    Image() {}
     Image(const Image&) = default;
     Image(Image&&) = default;
     ~Image() = default;
-    /*Image(const Image& other);
-    Image(Image&& other);
-    Image& operator=(const Image& other);*/
-
-    //std::string file_name = file_name_;
-    //float saturation = saturation_;
-    //float hue = hue_;
-    //float exposition = exposition_;
-    //float shade = shade_;
-    //float colorful_temperature = colorful_temperature_;
-    //float contrast = contrast_;
-    //float sharpness = sharpness_;
-    //float brightness = brightness_;
-    //int blur = blur_;
 
 
-    cv::Mat create_image(std::string file_name, float saturation, float hue, float exposition, float shade, float colorful_temperature, float contrast, float sharpness, float brightness, int blur) {
+    cv::Mat create_image(std::string file_name, float saturation, float hue, float exposition, float colorful_temperature, float contrast, float sharpness, float brightness, int blur) {
         cv::Mat image = cv::imread(file_name.c_str());
 
         float sharp = sharpness;
@@ -76,12 +51,13 @@ public:
 
         std::vector<cv::Mat> rgb_ct;
         cv::split(contrast_image, rgb_ct);
-        if (colorful_temperature >= 1.0f) {
+        if (colorful_temperature > 1.0f) {
             rgb_ct[0] *= colorful_temperature;
         }
         else if (colorful_temperature < 1.0f) {
             //colorful_temperature = (1.0f - colorful_temperature);
-            rgb_ct[2] *= colorful_temperature;
+            rgb_ct[0] *= (colorful_temperature);
+            //rgb_ct[2] *= 1.0f - colorful_temperature;
         }
         cv::merge(rgb_ct, rgb_image);
 
@@ -150,24 +126,8 @@ public:
         glDeleteTextures(1, &texture_id);
     }
 
+
 };
-
-
-//
-//
-//private:
-//    std::string file_name_ = "";
-//    float saturation_ = 1.0f;
-//    float hue_ = 1.0f;
-//    float exposition_ = 1.0f;
-//    float shade_ = 1.0f;
-//    float colorful_temperature_ = 1.0f;
-//    float contrast_ = 1.0f;
-//    float sharpness_ = 0.0f;
-//    float brightness_ = 1.0f;
-//    int blur_ = 1;
-
-
 
 
 //cmake --install . --config release --prefix C:\Users\knyaz_ayotgwn\Desktop\install_for_pe
