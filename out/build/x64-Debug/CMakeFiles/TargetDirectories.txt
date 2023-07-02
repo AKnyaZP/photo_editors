@@ -1,7 +1,0 @@
-C:/photo_editors/out/build/x64-Debug/CMakeFiles/test.dir
-C:/photo_editors/out/build/x64-Debug/CMakeFiles/edit_cache.dir
-C:/photo_editors/out/build/x64-Debug/CMakeFiles/rebuild_cache.dir
-C:/photo_editors/out/build/x64-Debug/photo_editors/CMakeFiles/photo_editors.dir
-C:/photo_editors/out/build/x64-Debug/photo_editors/CMakeFiles/test.dir
-C:/photo_editors/out/build/x64-Debug/photo_editors/CMakeFiles/edit_cache.dir
-C:/photo_editors/out/build/x64-Debug/photo_editors/CMakeFiles/rebuild_cache.dir
