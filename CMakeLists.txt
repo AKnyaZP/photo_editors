@@ -1,4 +1,4 @@
-﻿cmake_minimum_required(VERSION 3.18) 
+cmake_minimum_required(VERSION 3.18) 
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 set_property(GLOBAL PROPERTY PREDEFINED_TARGETS_FOLDER "cmake")
@@ -28,3 +28,4 @@ include_directories( ${OpenCV_INCLUDE_DIRS} )
 
 add_subdirectory ("photo_editors")
 
+install(IMPORTED_RUNTIME_ARTIFACTS ${OpenCV_LIBS} glfw unofficial::gl3w::gl3w RUNTIME)
